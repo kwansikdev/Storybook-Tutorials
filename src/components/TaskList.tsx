@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Task from './Task';
+import { connect } from 'react-redux';
+import { archiveTask, pinTask } from '../lib/redux';
 
 type TaskProp = {
   id: string;
@@ -9,16 +11,16 @@ type TaskProp = {
   state: string;
   updatedAt: Date;
 };
-interface TaskListProps {
+
+export interface TaskListProps {
   loading: boolean;
   tasks: TaskProp[];
   onPinTask(): void;
   onArchiveTask(): void;
 }
 
-export default function TaskList({ loading, tasks, onPinTask, onArchiveTask }: TaskListProps) {
+export function PureTaskList({ loading, tasks, onPinTask, onArchiveTask }) {
   const events = { onPinTask, onArchiveTask };
-
   const LoadingRow = (
     <div className='loading-item'>
       <span className='glow-checkbox' />
@@ -29,7 +31,6 @@ export default function TaskList({ loading, tasks, onPinTask, onArchiveTask }: T
       </span>
     </div>
   );
-
   if (loading) {
     return (
       <div className='list-items'>
@@ -42,7 +43,6 @@ export default function TaskList({ loading, tasks, onPinTask, onArchiveTask }: T
       </div>
     );
   }
-
   if (tasks.length === 0) {
     return (
       <div className='list-items'>
@@ -54,12 +54,10 @@ export default function TaskList({ loading, tasks, onPinTask, onArchiveTask }: T
       </div>
     );
   }
-
   const taskInOrder = [
     ...tasks.filter((t) => t.state === 'TASK_PINNED'),
     ...tasks.filter((t) => t.state !== 'TASK_PINNED'),
   ];
-
   return (
     <div className='list-items'>
       {taskInOrder.map((task) => (
@@ -69,13 +67,27 @@ export default function TaskList({ loading, tasks, onPinTask, onArchiveTask }: T
   );
 }
 
-TaskList.propTypes = {
+PureTaskList.propTypes = {
+  /** Checks if it's in loading state */
   loading: PropTypes.bool,
+  /** The list of tasks */
   tasks: PropTypes.arrayOf(Task.propTypes.task).isRequired,
-  onPinTask: PropTypes.func,
-  onArchiveTask: PropTypes.func,
+  /** Event to change the task to pinned */
+  onPinTask: PropTypes.func.isRequired,
+  /** Event to change the task to archived */
+  onArchiveTask: PropTypes.func.isRequired,
 };
 
-TaskList.defaultProps = {
+PureTaskList.defaultProps = {
   loading: false,
 };
+
+export default connect(
+  ({ tasks }) => ({
+    tasks: tasks.filter((t) => t.state === 'TASK_INBOX' || t.state === 'TASK_PINNED'),
+  }),
+  (dispatch) => ({
+    onArchiveTask: (id) => dispatch(archiveTask(id)),
+    onPinTask: (id) => dispatch(pinTask(id)),
+  }),
+)(PureTaskList);

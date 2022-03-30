@@ -1,5 +1,5 @@
-import { Meta, Story } from '@storybook/react';
 import React from 'react';
+import { Story, Meta } from '@storybook/react/types-6-0';
 
 import Task, { TaskProps } from './Task';
 
@@ -8,7 +8,7 @@ export default {
   title: 'Task',
 } as Meta;
 
-const Template: Story<TaskProps> = (arg) => <Task {...arg} />;
+const Template: Story<TaskProps> = (args) => <Task {...args} />;
 
 export const Default = Template.bind({});
 
